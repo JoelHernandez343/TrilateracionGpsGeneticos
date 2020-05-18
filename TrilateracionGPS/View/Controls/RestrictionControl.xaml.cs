@@ -29,7 +29,7 @@ namespace TrilateracionGPS.View.Controls
         }
 
         // Properties
-        private int index { get; set; }
+        private int index;
         public int Index
         {
             get => index;
@@ -40,19 +40,19 @@ namespace TrilateracionGPS.View.Controls
             }
         }
 
-        public Circle Circle
+        public Coordinate Coordinate
         {
-            get => new Circle { 
-                X = double.Parse(xField.Text),
-                Y = double.Parse(yField.Text),
-                R = double.Parse(rField.Text)
+            get => new Coordinate
+            {
+                Latitude = double.Parse(latitudeField.Text),
+                Longitude = double.Parse(longitudeField.Text),
+                Distance = double.Parse(distanceField.Text)
             };
-
             set
             {
-                xField.Text = value.X.ToString();
-                yField.Text = value.Y.ToString();
-                rField.Text = value.R.ToString();
+                latitudeField.Text = value.Latitude.ToString();
+                longitudeField.Text = value.Longitude.ToString();
+                distanceField.Text = value.Distance.ToString();
             }
         }
 
@@ -76,23 +76,81 @@ namespace TrilateracionGPS.View.Controls
 
         private void TextChanged_Event(object sender, RoutedEventArgs e)
         {
-            TextBox textBox = sender as TextBox;
-            bool val = true;
+            IsValid = CheckAllTextBox();
+        }   
 
+        bool CheckAllTextBox()
+        {
+            bool flag = true;
+            flag &= ToggleTextBoxStyle(latitudeField);
+            flag &= ToggleTextBoxStyle(longitudeField);
+            flag &= ToggleTextBoxStyle(distanceField);
+
+            return flag;
+        }
+        bool ToggleTextBoxStyle(TextBox t)
+        {
+            string m;
+            if (t.Name == "distanceField")
+                m = CheckDistance(t.Text);
+            else
+                m = CheckValidDouble(t.Text);
+
+            if (m == "")
+                RemoveErrorStyle(t);
+            else
+                SetErrorStyle(t, m);
+
+            return m == "";
+        }
+
+        void SetErrorStyle(TextBox t, string m)
+        {
+            t.Style = (Style)FindResource("TextBoxError");
+
+            var g = new StackPanel();
+            g.Children.Add(new TooltipContentControl { ErrorMessage = m });
+
+            t.ToolTip = new ToolTip { Content = g };
+        }
+        void RemoveErrorStyle(TextBox t)
+        {
+            t.Style = null;
+            t.ToolTip = null;
+        }
+        
+        string CheckValidDouble(string input)
+        {
+            double val;
+            string m = $"Ingresa un double válido.";
             try
             {
-                double.Parse(textBox.Text);
-            } catch (Exception)
+                val = double.Parse(input);
+            }
+            catch (Exception)
             {
-                val = false;
+                return m;
             }
 
-            IsValid = val;
+            return "";
+        }
+        string CheckDistance(string input)
+        {
+            double val;
+            string m = $"Ingresa un doble mayor o igual a 0.0.";
+            try
+            {
+                val = double.Parse(input);
+            }
+            catch (Exception)
+            {
+                return m;
+            }
 
-            if (!IsValid)
-                textBox.Style = (Style)FindResource("TextBoxError");
-            else
-                textBox.Style = null;
+            if (val < 0.0)
+                return m;
+
+            return "";
         }
     }
 }

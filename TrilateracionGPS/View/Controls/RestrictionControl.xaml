@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:TrilateracionGPS.View.Controls"
              mc:Ignorable="d" 
-             d:DesignHeight="80" d:DesignWidth="300">
+             d:DesignHeight="180" d:DesignWidth="300">
     <UserControl.Resources>
         <Style x:Key="TextBoxError" TargetType="TextBox">
             <Setter Property="BorderBrush" Value="Red"/>
@@ -19,14 +19,40 @@
     
     <StackPanel>
         <TextBlock x:Name="TitleTextBlock" Margin="10 10 0 0"/>
-        <StackPanel Orientation="Horizontal">
-            <TextBlock Text="X" Margin="10 10 5 5"/>
-            <TextBox Margin="0 10 5 5" Width="60" x:Name="xField" TextChanged="TextChanged_Event"/>
-            <TextBlock Text="Y" Margin="5 10 5 5"/>
-            <TextBox Margin="0 10 5 5" Width="60" x:Name="yField" TextChanged="TextChanged_Event"/>
-            <TextBlock Text="R" Margin="5 10 5 5"/>
-            <TextBox Margin="0 10 5 5" Width="60" x:Name="rField" TextChanged="TextChanged_Event"/>
-            <Button Content=" X " Margin="0 10 5 5" FontWeight="Bold" FontSize="10" x:Name="DeleteRestrictionButton"/>
-        </StackPanel>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="auto"/>
+            </Grid.ColumnDefinitions>
+
+
+            <StackPanel>
+                <TextBlock Text="Latitud" Margin="10 10 10 5"/>
+                <TextBox Margin="10 0 10 5" x:Name="latitudeField" TextChanged="TextChanged_Event"/>
+            </StackPanel>
+
+            <StackPanel Grid.Column="1">
+                <TextBlock Text="Longitud" Margin="10 10 10 5"/>
+                <TextBox Margin="10 0 10 5" x:Name="longitudeField" TextChanged="TextChanged_Event"/>
+            </StackPanel>
+
+            <StackPanel Grid.Column="2">
+                <TextBlock Text="Distancia" Margin="10 10 10 5"/>
+                <TextBox Margin="10 0 10 5" x:Name="distanceField" TextChanged="TextChanged_Event"/>
+            </StackPanel>
+
+            <Button Content=" X " 
+                    Margin="0 10 5 5" 
+                    FontWeight="Bold" 
+                    FontSize="10" 
+                    x:Name="DeleteRestrictionButton"
+                    Grid.Column="3"
+                    Height="25"
+                    Background="Salmon"/>
+            
+        </Grid>
+        <Border BorderBrush="Silver" BorderThickness="0 1 0 0" Margin="0 4 0 0"/>
     </StackPanel>
 </UserControl>

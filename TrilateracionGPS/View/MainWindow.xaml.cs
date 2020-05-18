@@ -24,21 +24,21 @@ namespace TrilateracionGPS.View
         public MainWindow()
         {
             InitializeComponent();
-            addRestriction(0);
-            addRestriction(1);
-            addRestriction(2);
+            AddRestriction(0);
+            AddRestriction(1);
+            AddRestriction(2);
         }
 
         /// UI Methods
         private void AddRestrictionButton_Click(object sender, RoutedEventArgs e)
         {
-            addRestriction(RestrictionsStackPanel.Children.Count);
+            AddRestriction(RestrictionsStackPanel.Children.Count);
         }
 
         private void RemoveRestrictionButton_Click(object sender, RoutedEventArgs e)
         {
-            var control = ((((sender as Button).Parent) as StackPanel).Parent as StackPanel).Parent as RestrictionControl;
-            removeRestriction(control.Index);
+            var control = ((((sender as Button).Parent) as Grid).Parent as StackPanel).Parent as RestrictionControl;
+            RemoveRestriction(control.Index);
         }
 
         private void TextChanged_Event(object sender, RoutedEventArgs e)
@@ -46,53 +46,84 @@ namespace TrilateracionGPS.View
             var t = sender as TextBox;
 
             if (t.Name == "TimerTextBox")
-                toggleConfigErrorStyle(t, checkInteger, 100);
-            if (t.Name == "PrecisionTextBox")
-                toggleConfigErrorStyle(t, checkInteger, 0);
+                ToggleConfigErrorStyle(t, CheckInteger, 100);
+            else if (t.Name == "PrecisionTextBox")
+                ToggleConfigErrorStyle(t, CheckInteger, 0);
             else if (t.Name == "PoblationSizeTextBox" || t.Name == "PoblationsTextBox")
-                toggleConfigErrorStyle(t, checkInteger, 1);
+                ToggleConfigErrorStyle(t, CheckInteger, 1);
             else
-                toggleConfigErrorStyle(t, checkError);
+                ToggleConfigErrorStyle(t, CheckError);
 
         }
 
         private void ClearAllRestrictionButton_Click(object sender, RoutedEventArgs e)
         {
-            foreach(RestrictionControl c in RestrictionsStackPanel.Children)
+            foreach (RestrictionControl c in RestrictionsStackPanel.Children)
             {
-                c.Circle = new Circle();
+                c.Coordinate = new Coordinate();
             }
         }
 
         private void ClearConfigButton_Click(object sender, RoutedEventArgs e)
         {
-            clearConfiguration(TimerTextBox);
-            clearConfiguration(PrecisionTextBox);
-            clearConfiguration(PoblationSizeTextBox);
-            clearConfiguration(PoblationsTextBox);
-            clearConfiguration(ErrorTextBox);
+            ClearConfiguration(TimerTextBox);
+            ClearConfiguration(PrecisionTextBox);
+            ClearConfiguration(PoblationSizeTextBox);
+            ClearConfiguration(PoblationsTextBox);
+            ClearConfiguration(ErrorTextBox);
             AbsErrRb.IsChecked = true;
         }
 
         private void CalculateButton_Click(object sender, RoutedEventArgs e)
         {
-            checkAllGeneticConfig();
+            if (!ValidateAll())
+                return; 
+            
+
+
         }
 
         /// UI Operations
-        
-        // Restrictions
-        void addRestriction(int index)
+
+        // Validate
+        public bool ValidateAll()
         {
-            RestrictionsStackPanel.Children.Add(new RestrictionControl { Index = index, Circle = new Circle(), DeleteFunction = RemoveRestrictionButton_Click });
-            updateIndexCanDelete();
+            bool isValid = true;
+            var badRestrictions = checkAllRestrictions();
+            if (badRestrictions.Count != 0)
+            {
+                isValid = false;
+                string m = "Existen errores en tus restricciones: ";
+
+                for (int i = 0; i < badRestrictions.Count; ++i)
+                    m += $"{badRestrictions[i] + 1}" + (i == badRestrictions.Count - 1 ? "" : ", ");
+                m += ". Chécalas.";
+
+                MessageBox.Show(m, "Errores en las restricciones.", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+
+            }
+
+            if (!CheckAllGeneticConfig())
+            {
+                MessageBox.Show("Hay error(es) en la configuración", "Error en la configuración.", MessageBoxButton.OK, MessageBoxImage.Exclamation);
+                isValid = false;
+            }
+
+            return isValid;
         }
-        void removeRestriction(int index)
+
+        // Restrictions
+        void AddRestriction(int index)
+        {
+            RestrictionsStackPanel.Children.Add(new RestrictionControl { Index = index, Coordinate = new Coordinate(), DeleteFunction = RemoveRestrictionButton_Click });
+            UpdateIndexCanDelete();
+        }
+        void RemoveRestriction(int index)
         {
             RestrictionsStackPanel.Children.RemoveAt(index);
-            updateIndexCanDelete();
-        }   
-        void updateIndexCanDelete()
+            UpdateIndexCanDelete();
+        }
+        void UpdateIndexCanDelete()
         {
             bool canDelete = RestrictionsStackPanel.Children.Count > 3;
             int i = 0;
@@ -101,51 +132,66 @@ namespace TrilateracionGPS.View
                 c.CanDelete = canDelete;
                 c.Index = i++;
             }
-            
+
+        }
+        List<int> checkAllRestrictions()
+        {
+            var indexes = new List<int>();
+            int i = 0;
+            foreach(RestrictionControl c in RestrictionsStackPanel.Children)
+            {
+                if (!c.IsValid)
+                    indexes.Add(i);
+                i++;
+            }
+
+            return indexes;
         }
 
         // Genetics TextBox
-        void clearConfiguration(TextBox t)
+        void ClearConfiguration(TextBox t)
         {
-            removeErrorStyle(t);
+            RemoveErrorStyle(t);
             t.Text = "";
         }
-        void setErrorStyle(TextBox t, string m)
+        void SetErrorStyle(TextBox t, string m)
         {
             t.Style = (Style)FindResource("TextBoxError");
-            t.ToolTip = new ToolTip { Content = m };
+            var g = new StackPanel();
+            g.Children.Add(new TooltipContentControl { ErrorMessage = m });
+            t.ToolTip = new ToolTip { Content = g };
         }
-        void removeErrorStyle(TextBox t)
+        void RemoveErrorStyle(TextBox t)
         {
             t.Style = null;
             t.ToolTip = null;
         }
 
         // Evaluation of Genetics TextBox
-        bool toggleConfigErrorStyle(TextBox t, Func<string, int, string> checker, int begin)
+        bool ToggleConfigErrorStyle(TextBox t, Func<string, int, string> checker, int begin)
         {
             string r = checker(t.Text, begin);
 
             if (r == "")
-                removeErrorStyle(t);
+                RemoveErrorStyle(t);
             else
-                setErrorStyle(t, r);
+                SetErrorStyle(t, r);
 
             return r == "";
         }
-        bool toggleConfigErrorStyle(TextBox t, Func<string, string> errorChecker)
+        bool ToggleConfigErrorStyle(TextBox t, Func<string, string> errorChecker)
         {
             string r = errorChecker(t.Text);
 
             if (r == "")
-                removeErrorStyle(t);
+                RemoveErrorStyle(t);
             else
-                setErrorStyle(t, r);
+                SetErrorStyle(t, r);
 
             return r == "";
         }
 
-        string checkInteger(string input, int begin)
+        string CheckInteger(string input, int begin)
         {
             int val;
             string m = $"Ingresa un entero mayor o igual a {begin}";
@@ -163,7 +209,7 @@ namespace TrilateracionGPS.View
 
             return "";
         }
-        string checkError(string input)
+        string CheckError(string input)
         {
             double val;
             string m = $"Ingresa un doble entre 0.0 y 1.0";
@@ -176,30 +222,23 @@ namespace TrilateracionGPS.View
                 return m;
             }
 
-            if (val < 0.0 && val > 1.0)
+            if (val < 0.0 || val > 1.0)
                 return m;
 
             return "";
         }
 
-        bool checkAllGeneticConfig()
+        bool CheckAllGeneticConfig()
         {
-            if (!toggleConfigErrorStyle(TimerTextBox, checkInteger, 100))
-                return false;
+            bool flag = true;
 
-            if (!toggleConfigErrorStyle(PrecisionTextBox, checkInteger, 0))
-                return false;
+            flag &= ToggleConfigErrorStyle(TimerTextBox, CheckInteger, 100);
+            flag &= ToggleConfigErrorStyle(PrecisionTextBox, CheckInteger, 0);
+            flag &= ToggleConfigErrorStyle(PoblationSizeTextBox, CheckInteger, 1);
+            flag &= ToggleConfigErrorStyle(PoblationsTextBox, CheckInteger, 1);
+            flag &= ToggleConfigErrorStyle(ErrorTextBox, CheckError);
 
-            if (!toggleConfigErrorStyle(PoblationSizeTextBox, checkInteger, 1))
-                return false;
-
-            if (!toggleConfigErrorStyle(PoblationsTextBox, checkInteger, 1))
-                return false;
-
-            if (!toggleConfigErrorStyle(ErrorTextBox, checkError))
-                return false;
-
-            return true;
+            return flag;
         }
 
     }

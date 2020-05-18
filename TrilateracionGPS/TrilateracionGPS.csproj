@@ -60,8 +60,16 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Model\Circle.cs" />
+    <Compile Include="Model\Coordinate.cs" />
+    <Compile Include="Model\Genetics.cs" />
+    <Compile Include="Model\Limit.cs" />
+    <Compile Include="Model\PriorityQueue.cs" />
+    <Compile Include="Model\Restriction.cs" />
     <Compile Include="View\Controls\RestrictionControl.xaml.cs">
       <DependentUpon>RestrictionControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\Controls\TooltipContentControl.xaml.cs">
+      <DependentUpon>TooltipContentControl.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
@@ -95,6 +103,10 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="View\Controls\RestrictionControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\Controls\TooltipContentControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

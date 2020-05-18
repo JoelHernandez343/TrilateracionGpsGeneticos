@@ -73,7 +73,7 @@
                            Text="Restricciones:"
                            Style="{StaticResource SubTitleStyle}"
                            Width="290"/>
-                        <Button Content="+" 
+                        <Button Content="Agregar" 
                             FontWeight="Bold"
                             Width="100"
                             Margin="10 10 10 0"
@@ -112,32 +112,35 @@
                                 x:Name="ClearConfigButton"
                                 Click="ClearConfigButton_Click"/>
 
-                        <StackPanel Margin="10 10 10 0">
-                            <TextBlock Text="Tiempo límite(milisegundos): "/>
-                            <TextBox x:Name="TimerTextBox" Margin="0 5" TextChanged="TextChanged_Event" LostFocus="TextChanged_Event"/>
-                            <TextBlock Text="Ingresar precisión: "/>
-                            <TextBox x:Name="PrecisionTextBox" Margin="0 5" TextChanged="TextChanged_Event" LostFocus="TextChanged_Event"/>
-                            <TextBlock Text="Tamaño: "/>
-                            <TextBox x:Name="PoblationSizeTextBox" Margin="0 5" TextChanged="TextChanged_Event" LostFocus="TextChanged_Event"/>
-                            <TextBlock Text="Número de poblaciones: "/>
-                            <TextBox x:Name="PoblationsTextBox" Margin="0 5" TextChanged="TextChanged_Event" LostFocus="TextChanged_Event"/>
-                            <TextBlock Text="Error: "/>
-                            <TextBox x:Name="ErrorTextBox" Margin="0 5" TextChanged="TextChanged_Event" LostFocus="TextChanged_Event"/>
-                            <StackPanel Orientation="Horizontal">
-                                <RadioButton x:Name="AbsErrRb" Content="Absoluto" IsChecked="True"/>
-                                <TextBlock Width="10"/>
-                                <RadioButton x:Name="RelErrRb" Content="Relativo"/>
+                        <ScrollViewer>
+                            <StackPanel Margin="10 10 10 0">
+                                <TextBlock Text="Tiempo límite(milisegundos): "/>
+                                <TextBox x:Name="TimerTextBox" Margin="0 5" TextChanged="TextChanged_Event" LostFocus="TextChanged_Event"/>
+                                <TextBlock Text="Ingresar precisión: "/>
+                                <TextBox x:Name="PrecisionTextBox" Margin="0 5" TextChanged="TextChanged_Event" LostFocus="TextChanged_Event"/>
+                                <TextBlock Text="Tamaño: "/>
+                                <TextBox x:Name="PoblationSizeTextBox" Margin="0 5" TextChanged="TextChanged_Event" LostFocus="TextChanged_Event"/>
+                                <TextBlock Text="Número de poblaciones: "/>
+                                <TextBox x:Name="PoblationsTextBox" Margin="0 5" TextChanged="TextChanged_Event" LostFocus="TextChanged_Event"/>
+                                <TextBlock Text="Error: "/>
+                                <TextBox x:Name="ErrorTextBox" Margin="0 5" TextChanged="TextChanged_Event" LostFocus="TextChanged_Event"/>
+                                <StackPanel Orientation="Horizontal">
+                                    <RadioButton x:Name="AbsErrRb" Content="Absoluto" IsChecked="True"/>
+                                    <TextBlock Width="10"/>
+                                    <RadioButton x:Name="RelErrRb" Content="Relativo"/>
+                                </StackPanel>
                             </StackPanel>
-                        </StackPanel>
+                        </ScrollViewer>
                     </DockPanel>
                 </Grid>
 
                 <Button Grid.Row="4"
-                    Margin="0 20 0 0"
-                    Content="CALCULAR"
-                    x:Name="CalculateButton"
-                    Click="CalculateButton_Click"
-                    FontWeight="Black"/>
+                        Margin="0 20 0 0"
+                        Content="CALCULAR"
+                        x:Name="CalculateButton"
+                        Click="CalculateButton_Click"
+                        FontWeight="Black"
+                        Height="40"/>
             </Grid>
         </Grid>
 

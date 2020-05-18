@@ -1,0 +1,21 @@
+﻿<UserControl x:Class="TrilateracionGPS.View.Controls.TooltipContentControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:TrilateracionGPS.View.Controls"
+             mc:Ignorable="d" 
+             d:DesignHeight="100" d:DesignWidth="200">
+    <UserControl.Resources>
+        <Style x:Key="TitleStyle" TargetType="TextBlock">
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontSize" Value="14"/>
+        </Style>
+    </UserControl.Resources>
+    
+    <StackPanel>
+        <TextBlock Text="Error" Style="{StaticResource TitleStyle}"/>
+        <Border BorderBrush="Silver" BorderThickness="0 1 0 0" Margin="0 4 0 6"/>
+        <TextBlock x:Name="errorMessageTextBlock" Text="Error message" Margin="0 0 0 4"/>
+    </StackPanel>
+</UserControl>

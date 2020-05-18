@@ -17,19 +17,5 @@ namespace TrilateracionGPS.Model
             set { r = value < 0 ? -value : value; }
             get => r;
         }
-
-        public Circle(double x, double y, double r)
-        {
-            X = x;
-            Y = y;
-            R = r;
-        }
-
-        public Circle()
-        {
-            X = 0;
-            Y = 0;
-            R = 0;
-        }
     }
 }
