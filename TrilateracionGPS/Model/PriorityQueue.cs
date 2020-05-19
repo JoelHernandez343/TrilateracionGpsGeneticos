@@ -6,121 +6,84 @@ using System.Threading.Tasks;
 
 namespace TrilateracionGPS.Model
 {
-    public struct Pair
-    {
-        public char[] item
-        {
-            get; set;
-        }
-        public int repetitions
-        {
-            get; set;
-        }
-        public double weight
-        {
-            get; set;
-        }
-
-        public bool equalTo(char[] item)
-        {
-            if (this.item.Length != item.Length)
-                return false;
-
-            for (int i = 0; i < item.Length; ++i)
-                if (this.item[i] != item[i])
-                    return false;
-
-            return true;
-        }
-
-
-    }
+    
     public class PriorityQueue
     {
         public List<Pair> queue;
 
-        public char[][] getOnlyValues()
+        // Get each Pair.Item of each queue element and return them
+        public char[][] GetOnlyValues()
         {
-
             char[][] result = new char[queue.Count][];
 
             for (int i = 0; i < result.Length; ++i)
-                result[i] = queue[i].item;
+                result[i] = queue[i].Item;
 
             return result;
         }
 
+        // Constructor
         public PriorityQueue()
         {
             queue = new List<Pair>();
         }
-
-        public void push(char[] item, double weight)
+        
+        // Push an element, ordering first by repetitions, then by weight
+        public void Push(char[] item, double weight)
         {
-
+            // First element to be inserted
             if (queue.Count == 0)
             {
-                queue.Add(new Pair
-                {
-                    item = item,
-                    repetitions = 1,
-                    weight = weight
-                });
+                queue.Add(new Pair { Item = item, Repetitions = 1, Weight = weight});
                 return;
             }
 
-            bool find = false;
+            // Search the element in the queque
+            int i = SearchFor(item);
 
-            int i;
-            for (i = queue.Count - 1; i >= 0; --i)
-            {
-                if (!queue[i].equalTo(item))
-                    continue;
+            // If exits, update the repetitions or add a new element if not
+            if (i >= 0)
+                queue[i] = new Pair { Item = queue[i].Item, Repetitions = queue[i].Repetitions + 1, Weight = queue[i].Weight };
+            else
+                queue.Add(new Pair { Item = item, Repetitions = 1, Weight = weight });
 
-                queue[i] = new Pair
-                {
-                    item = queue[i].item,
-                    repetitions = queue[i].repetitions + 1,
-                    weight = queue[i].weight
-                };
-                find = true;
-                break;
-            }
+            Shift(i);
 
-            if (!find)
-            {
-                queue.Add(new Pair
-                {
-                    item = item,
-                    repetitions = 1,
-                    weight = weight
-                });
-                i = queue.Count - 1;
-            }
+        }
 
+        // Search for the item inside the queue and returns its index
+        // Return -1 if not
+        public int SearchFor(char[] item) => queue.FindIndex(e => e.EqualsTo(item));
+
+        // Shift the queue starting from i
+        void Shift(int i)
+        {
             for (int j = i - 1; j >= 0; --j)
             {
-
-                if (queue[i].repetitions < queue[j].repetitions)
+                if (queue[i].Repetitions < queue[j].Repetitions)
                     break;
-
-                if (queue[i].repetitions > queue[j].repetitions)
+                
+                if (queue[i].Repetitions > queue[j].Repetitions)
                 {
-                    Pair aux = queue[i];
-                    queue[i] = queue[j];
-                    queue[j] = aux;
+                    Swap(i, j);
                     i = j;
                     continue;
                 }
 
-                if (queue[i].weight > queue[j].weight)
-                {
-                    Pair aux = queue[i];
-                    queue[i] = queue[j];
-                    queue[j] = aux;
-                    i = j;
-                }
+                if (queue[i].Weight <= queue[j].Weight)
+                    continue;
+
+                Swap(i, j);
+                i = j;
             }
+        }
+
+        // Swap i with j elements in the queue
+        void Swap(int i, int j)
+        {
+            Pair aux = queue[i];
+            queue[i] = queue[j];
+            queue[j] = aux;
         }
 
     }

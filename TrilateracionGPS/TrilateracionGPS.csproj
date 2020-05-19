@@ -63,6 +63,7 @@
     <Compile Include="Model\Coordinate.cs" />
     <Compile Include="Model\Genetics.cs" />
     <Compile Include="Model\Limit.cs" />
+    <Compile Include="Model\Pair.cs" />
     <Compile Include="Model\PriorityQueue.cs" />
     <Compile Include="Model\Restriction.cs" />
     <Compile Include="View\Controls\RestrictionControl.xaml.cs">

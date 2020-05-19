@@ -290,7 +290,7 @@ namespace TrilateracionGPS.Model
                 {
                     if (r < zpercentage[j])
                     {
-                        best.push(poblation[j], z[j]);
+                        best.Push(poblation[j], z[j]);
                         break;
                     }
                 }
@@ -298,7 +298,7 @@ namespace TrilateracionGPS.Model
 
             Console.WriteLine("-----");
 
-            return best.getOnlyValues();
+            return best.GetOnlyValues();
         }
 
     }
