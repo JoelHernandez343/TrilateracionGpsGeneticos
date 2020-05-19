@@ -77,7 +77,12 @@ namespace TrilateracionGPS.View.Controls
         private void TextChanged_Event(object sender, RoutedEventArgs e)
         {
             IsValid = CheckAllTextBox();
-        }   
+        }
+
+        private void TextKeyFocus_Event(object sender, KeyboardFocusChangedEventArgs e)
+        {
+            (sender as TextBox).SelectAll();
+        }
 
         bool CheckAllTextBox()
         {

@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -9,8 +11,10 @@ using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 using TrilateracionGPS.Model;
 using TrilateracionGPS.View.Controls;
 
@@ -27,7 +31,12 @@ namespace TrilateracionGPS.View
             AddRestriction(0);
             AddRestriction(1);
             AddRestriction(2);
+            PrevMessageText.Visibility = Visibility.Visible;
+            ResultGrid.Visibility = Visibility.Collapsed;
+            ErrorMessageGrid.Visibility = Visibility.Collapsed;
         }
+
+        CancellationTokenSource timer;
 
         /// UI Methods
         private void AddRestrictionButton_Click(object sender, RoutedEventArgs e)
@@ -46,14 +55,21 @@ namespace TrilateracionGPS.View
             var t = sender as TextBox;
 
             if (t.Name == "TimerTextBox")
-                ToggleConfigErrorStyle(t, CheckInteger, 100);
+                ToggleConfigErrorStyle(t, CheckInteger, 100, int.MaxValue);
             else if (t.Name == "PrecisionTextBox")
-                ToggleConfigErrorStyle(t, CheckInteger, 0);
-            else if (t.Name == "PoblationSizeTextBox" || t.Name == "PoblationsTextBox")
-                ToggleConfigErrorStyle(t, CheckInteger, 1);
+                ToggleConfigErrorStyle(t, CheckInteger, 0, int.MaxValue);
+            else if (t.Name == "PoblationSizeTextBox")
+                ToggleConfigErrorStyle(t, CheckInteger, 1, int.MaxValue);
+            else if (t.Name == "PoblationsTextBox")
+                ToggleConfigErrorStyle(t, CheckInteger, 1, 100);
             else
                 ToggleConfigErrorStyle(t, CheckError);
 
+        }
+
+        private void TextKeyFocus_Event(object sender, KeyboardFocusChangedEventArgs e)
+        {
+            (sender as TextBox).SelectAll();
         }
 
         private void ClearAllRestrictionButton_Click(object sender, RoutedEventArgs e)
@@ -74,13 +90,126 @@ namespace TrilateracionGPS.View
             AbsErrRb.IsChecked = true;
         }
 
-        private void CalculateButton_Click(object sender, RoutedEventArgs e)
+        private async void CalculateButton_Click(object sender, RoutedEventArgs e)
         {
             if (!ValidateAll())
-                return; 
+                return;
+
+            PrevMessageText.Visibility = Visibility.Collapsed;
+            ResultGrid.Visibility = Visibility.Visible;
+
+            ElapsedTimeTextBlock.Text = "--.--";
+            LatitudeTextBlock.Text = "--.--";
+            LongitudeTextBlock.Text = "--.--";
+
+            toggleCalculateButtonFunction();
+
+            var coordinates = new List<Coordinate>();
+            var circles = new List<Circle>();
+
+            foreach (RestrictionControl r in RestrictionsStackPanel.Children)
+            {
+                coordinates.Add(r.Coordinate);
+                circles.Add(new Circle { X = r.Coordinate.Latitude, Y = r.Coordinate.Longitude, R = r.Coordinate.Distance });
+            }
+
+            int n = int.Parse(PrecisionTextBox.Text);
+            int rounds = int.Parse(PoblationsTextBox.Text);
+            int size = int.Parse(PoblationSizeTextBox.Text);
+            double error = double.Parse(ErrorTextBox.Text);
+            bool abs = (bool)AbsErrRb.IsChecked;
+
+            LogStackPanel.Children.Clear();
+
+            int timeout = int.Parse(TimerTextBox.Text);
+            timer = new CancellationTokenSource();
+            timer.CancelAfter(timeout);
+
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+
+            SetProgressBar(timeout);
+
             
 
+            try
+            {
+                var res = await Task.Run(() => Genetics.Calculate(circles.ToArray(), n, rounds, size, error, !abs, UpdateLogCrossThread, timer.Token), timer.Token);
 
+                ResultsStackPanel.Visibility = Visibility.Visible;
+                ErrorMessageGrid.Visibility = Visibility.Collapsed;
+
+                LatitudeTextBlock.Text = res.Item2.ToString();
+                LongitudeTextBlock.Text = res.Item3.ToString();
+
+            }
+            catch (Exception ex)
+            {
+                ResultsStackPanel.Visibility = Visibility.Collapsed;
+                ErrorMessageGrid.Visibility = Visibility.Visible;
+
+                if (ex is TimeoutException)
+                    ErrorMessageTextBlock.Text = "Se acabo el tiempo.";
+                else
+                    ErrorMessageTextBlock.Text = $"Ocurrió una excepción de tipo {ex.GetType().Name}\nMensaje: {ex.Message}";
+            }
+
+            StopProgressBar(timeout);
+            sw.Stop();
+            ElapsedTimeTextBlock.Text = sw.Elapsed.ToString();
+
+            toggleCalculateButtonFunction();
+
+            timer = null;
+        }
+
+        private void SetProgressBar(int timeout)
+        {
+            TimeProgressBar.Value = 0;
+            Duration dr = new Duration(TimeSpan.FromMilliseconds(timeout));
+            DoubleAnimation da = new DoubleAnimation(100, dr);
+            TimeProgressBar.IsIndeterminate = false;
+            TimeProgressBar.BeginAnimation(ProgressBar.ValueProperty, da);
+
+        }
+
+        private void StopProgressBar(int timeout)
+        {
+            TimeProgressBar.BeginAnimation(ProgressBar.ValueProperty, null);
+            TimeProgressBar.Value = 100;
+        }
+
+        private void toggleCalculateButtonFunction()
+        {
+            if ((string)CalculateButton.Content == "CALCULAR")
+            {
+                CalculateButton.Click -= CalculateButton_Click;
+                CalculateButton.Click += CancelButton_Click;
+                CalculateButton.Content = "CANCELAR";
+                CalculateButton.Foreground = Brushes.Red;
+            }
+            else
+            {
+                CalculateButton.Click -= CancelButton_Click;
+                CalculateButton.Click += CalculateButton_Click;
+                CalculateButton.Content = "CALCULAR";
+                CalculateButton.ClearValue(ForegroundProperty);
+            }
+        }
+
+        private void CancelButton_Click(object sender, RoutedEventArgs e)
+        {
+            timer?.Cancel();
+        }
+
+        private delegate void UpdateLogCallback((int, double, double, double) m);
+        public void UpdateLogCrossThread((int, double, double, double) m)
+        {
+            Dispatcher.BeginInvoke(new UpdateLogCallback(addLogToStackPanel), System.Windows.Threading.DispatcherPriority.Render, new object[] { m });
+        }
+        private void addLogToStackPanel((int, double, double, double) m)
+        {
+            LogStackPanel.Children.Add(new LogItem { Values = m });
         }
 
         /// UI Operations
@@ -168,9 +297,9 @@ namespace TrilateracionGPS.View
         }
 
         // Evaluation of Genetics TextBox
-        bool ToggleConfigErrorStyle(TextBox t, Func<string, int, string> checker, int begin)
+        bool ToggleConfigErrorStyle(TextBox t, Func<string, int, int, string> checker, int begin, int limit)
         {
-            string r = checker(t.Text, begin);
+            string r = checker(t.Text, begin, limit);
 
             if (r == "")
                 RemoveErrorStyle(t);
@@ -191,10 +320,10 @@ namespace TrilateracionGPS.View
             return r == "";
         }
 
-        string CheckInteger(string input, int begin)
+        string CheckInteger(string input, int begin, int limit)
         {
             int val;
-            string m = $"Ingresa un entero mayor o igual a {begin}";
+            string m = limit == int.MaxValue ? $"Ingresa un entero mayor o igual a {begin}" : $"Ingresa un entero entre {begin} y {limit}";
             try
             {
                 val = int.Parse(input);
@@ -204,7 +333,7 @@ namespace TrilateracionGPS.View
                 return m;
             }
 
-            if (val < begin)
+            if (val < begin || val > limit)
                 return m;
 
             return "";
@@ -232,10 +361,10 @@ namespace TrilateracionGPS.View
         {
             bool flag = true;
 
-            flag &= ToggleConfigErrorStyle(TimerTextBox, CheckInteger, 100);
-            flag &= ToggleConfigErrorStyle(PrecisionTextBox, CheckInteger, 0);
-            flag &= ToggleConfigErrorStyle(PoblationSizeTextBox, CheckInteger, 1);
-            flag &= ToggleConfigErrorStyle(PoblationsTextBox, CheckInteger, 1);
+            flag &= ToggleConfigErrorStyle(TimerTextBox, CheckInteger, 100, int.MaxValue);
+            flag &= ToggleConfigErrorStyle(PrecisionTextBox, CheckInteger, 0, int.MaxValue);
+            flag &= ToggleConfigErrorStyle(PoblationSizeTextBox, CheckInteger, 1, int.MaxValue);
+            flag &= ToggleConfigErrorStyle(PoblationsTextBox, CheckInteger, 1, 100);
             flag &= ToggleConfigErrorStyle(ErrorTextBox, CheckError);
 
             return flag;

@@ -2,45 +2,46 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using TrilateracionGPS.View;
 
 namespace TrilateracionGPS.Model
 {
     class Genetics
     {
-        static int limitOfExecution = 50000000, err;
-        // Para numeros aleatorios
-        static Random random = new Random();
+        // For random numbers
+        static readonly Random Rand = new Random();
 
-        // Obtiene el numero de bits a utilizar de cierta variable
-        public static int getMj(double a, double b, int n)
+        // Get the necessary bits for a certain variable
+        public static int GetMj(double a, double b, int n)
         {
+            if (b - a <= 0 || n <= 0)
+                throw new ArgumentException($"El dominio de la variable es inválido: a = {a}, b = {b}, n = {n}.");
+
             double r = (Math.Log(b - a) + Math.Log(10) * n) / Math.Log(2);
 
             int integerPart = Convert.ToInt32(r);
 
-            if (r - integerPart <= 0)
-                return integerPart;
-
-            return integerPart + 1;
+            return r - integerPart <= 0 ? integerPart : integerPart + 1;
         }
 
-        // Mapea el valor de una variable de valor máximo de 63 bits
-        private static double mapValueFast(char[] chromosome, int begin, int end, double a, double b)
+        // Map a chromosome part that fits in 64 bits
+        private static double MapValueFast(char[] chromosome, int begin, int end, double a, double b)
         {
-            long val = 0;
-            long vmx = 0;
+            ulong val = 0;
+            ulong vmx = 0;
             for (int i = begin; i < end; ++i)
             {
-                val = (val << 1) | (long)(chromosome[i] - '0');
-                vmx = (vmx << 1) | 1;
+                val = (val << 1) | ((ulong)chromosome[i] - '0');
+                vmx = (vmx << 1) | 1ul;
             }
 
-            return (long)((b - a) * val) / (double)vmx + a;
+            return (ulong)((b - a) * val) / (double)vmx + a;
         }
 
-        // Mapea el valor de una variable de más de 63 bits
-        private static double mapValueSlow(char[] chromosome, int begin, int end, double a, double b)
+        // Map a chromosome part that doesn't fit in 64 bits
+        private static double MapValueSlow(char[] chromosome, int begin, int end, double a, double b)
         {
             double val = 0;
             double vmx = 0;
@@ -53,253 +54,217 @@ namespace TrilateracionGPS.Model
             return (b - a) * val / vmx + a;
         }
 
-        // Obtiene el valor de una variable dado un cromosoma
-        // La variable ocupa desde chromosome[begin] a chromosome[end - 1]
-        public static double mapValue(char[] chromosome, int begin, int end, double a, double b)
+        // Get the mapped value of a chromosome's variable
+        // The variable occupies from chromosome[begin] to chromosome[end - 1]
+        public static double MapValue(char[] chromosome, int begin, int end, double a, double b)
         {
-            return end - begin > 63 ? mapValueSlow(chromosome, begin, end, a, b) : mapValueFast(chromosome, begin, end, a, b);
+            return end - begin > 64 ? MapValueSlow(chromosome, begin, end, a, b) : MapValueFast(chromosome, begin, end, a, b);
         }
 
-        // Genera una lista de chars de longitud n con numeros aleatorios
-        public static char[] randomBits(int n)
+        // Generate a chromosome with n random bits
+        public static char[] GenerateRandomChromosome(int n)
         {
-            char[] r = new char[n];
+            var r = new char[n];
 
             for (int i = 0; i < n; ++i)
-                r[i] = random.Next(0, 2).ToString()[0];
+                r[i] = Rand.Next(0, 2).ToString()[0];
 
             return r;
         }
 
-        public static double[] getMappedValues(char[] chromosome, Limit[] limits)
+        // Get the mapped values of a chromosome
+        public static double[] GetMappedValues(char[] chromosome, Limit[] limits)
         {
-            double[] mappedValues = new double[limits.Length];
+            var mappedValues = new double[limits.Length];
             for (int i = 0, j = 0; i < mappedValues.Length; ++i)
             {
-
-                mappedValues[i] = mapValue(chromosome, j, j + limits[i].M, limits[i].A, limits[i].B);
+                mappedValues[i] = MapValue(chromosome, j, j + limits[i].M, limits[i].A, limits[i].B);
                 j += limits[i].M;
-
             }
 
             return mappedValues;
         }
 
-        // Evaluamos si un hijo es valido o no
-        public static bool evaluate(char[] chromosome, Limit[] limits, Restriction[] restrictions)
+        // Check if a chromosome is valid
+        public static bool CheckChromosome(char[] chromosome, Limit[] limits, Restriction[] restrictions)
         {
-            var mappedValues = getMappedValues(chromosome, limits);
+            var mappedValues = GetMappedValues(chromosome, limits);
 
             for (int i = 0; i < restrictions.Length; ++i)
                 if (!restrictions[i].condition(mappedValues[0], mappedValues[1]))
                     return false;
 
             return true;
-
         }
 
-        public static char[] generateChromosome(Limit[] limits, Restriction[] restrictions)
+        // Generate a valid chromosome
+        public static char[] GenerateChromosome(Limit[] limits, Restriction[] restrictions, CancellationToken timer)
         {
             char[] chromosome = null;
             bool stay = true;
 
-            while (stay && err < limitOfExecution)
+            while (stay && !timer.IsCancellationRequested)
             {
-                err++;
-
                 int n = 0;
-                for (int i = 0; i < limits.Length; ++i)
-                    n += limits[i].M;
+                foreach (var l in limits) n += l.M;
 
-                chromosome = randomBits(n);
-
-                stay = !evaluate(chromosome, limits, restrictions);
-
+                chromosome = GenerateRandomChromosome(n);
+                stay = !CheckChromosome(chromosome, limits, restrictions);
             }
 
-            if (err == limitOfExecution)
-                throw new StackOverflowException("Limite de iteraciones alcanzado.");
+            if (timer.IsCancellationRequested)
+                throw new TimeoutException();
 
             return chromosome;
         }
 
-
-        public static char[][] generatePoblation(Limit[] limits, Restriction[] restrictions, int m)
+        // Generate a poblation of n valid chromosomes
+        public static char[][] GeneratePoblation(Limit[] limits, Restriction[] restrictions, int m, CancellationToken timer)
         {
             char[][] poblation = new char[m][];
 
             for (int i = 0; i < m; ++i)
-                poblation[i] = generateChromosome(limits, restrictions);
+                poblation[i] = GenerateChromosome(limits, restrictions, timer);
 
             return poblation;
         }
 
-        public static char[] mutation(char[] chromosome)
+        // Mutate a random chromosome's gen and return a new one
+        public static char[] Mutate(char[] chromosome)
         {
+            var r = chromosome.Clone() as char[];
 
-            char[] answer = new char[chromosome.Length];
-            for (int i = 0; i < answer.Length; ++i)
-                answer[i] = chromosome[i];
-
-            int index = random.Next(0, answer.Length);
-            if (answer[index] == '1')
-            {
-                answer[index] = '0';
-                return answer;
-            }
-            answer[index] = '1';
-
-            return answer;
-        }
-
-        public static char[] crossover(char[] parent1, char[] parent2)
-        {
-
-            int chromosome_size = parent1.Length;
-
-            char[] child = new char[chromosome_size];
-
-            int n = random.Next(0, chromosome_size);
-
-            for (int i = 0; i < n; ++i)
-                child[i] = parent1[i];
-
-            for (int i = n; i < chromosome_size; ++i)
-                child[i] = parent2[i];
-
-            return child;
-
-
-        }
-
-        public static void showP(char[][] poblation, Limit[] limits, Restriction[] restrictions)
-        {
-            for (int i = 0; i < poblation.Length; ++i)
-                Console.WriteLine("{0}. {1} : {2}", i, showC(poblation[i]), evaluate(poblation[i], limits, restrictions));
-        }
-
-        public static string showC(char[] c)
-        {
-            ; string r = "";
-
-            for (int i = 0; i < c.Length; ++i)
-                r += c[i];
+            int index = Rand.Next(0, r.Length);
+            r[index] = r[index] == '1' ? '0' : '1';
 
             return r;
         }
 
-        // Metodo maestro - Geneticos chido
-        public static (int, double, double, double)[] calculate(Circle[] circles, int n, int rounds, int size, double e, bool rel)
+        // Cross two chromosome in a random position
+        public static char[] Cross(char[] parent1, char[] parent2)
         {
-            err = 0;
+            int chromosomeSize = parent1.Length;
+            var child = new char[chromosomeSize];
+            int n = Rand.Next(0, chromosomeSize);
 
-            var answer = new (int, double, double, double)[rounds];
+            for (int i = 0; i < n; ++i)
+                child[i] = parent1[i];
 
-            Restriction.initializeZ(circles);
+            for (int i = n; i < chromosomeSize; ++i)
+                child[i] = parent2[i];
 
-            var restrictions = Restriction.generate(circles, e, rel);
-            var limits = Limit.generate(restrictions, n);
-            var poblation = Genetics.generatePoblation(limits, restrictions, size);
-
-
-
-            for (int i = 0; i < rounds && i < 100; ++i)
-            {
-                var best = round(poblation, limits, restrictions);
-
-
-
-                int j;
-                for (j = 0; j < best.Length; ++j)
-                    poblation[j] = best[j];
-
-                for (int k = j; k < poblation.Length; ++k)
-                {
-
-                    while (err < limitOfExecution)
-                    {
-                        err++;
-
-                        if (random.Next(0, 2) == 0)
-                        {
-                            poblation[k] = mutation(best[random.Next(0, j)]);
-                        }
-                        else
-                        {
-                            poblation[k] = crossover(best[random.Next(0, j)], best[random.Next(0, j)]);
-                        }
-
-                        if (evaluate(poblation[k], limits, restrictions))
-                            break;
-                    }
-
-                    if (err == limitOfExecution)
-                        throw new StackOverflowException("Limite de iteraciones alcanzado.");
-
-                }
-
-                var values = Genetics.getMappedValues(poblation[0], limits);
-
-                answer[i] = (i, values[0], values[1], Restriction.z(values[0], values[1]));
-
-                Console.WriteLine("Ronda");
-                Console.WriteLine(answer[i].Item1);
-                Console.Write("x: ");
-                Console.WriteLine(answer[i].Item2);
-                Console.Write("y: ");
-                Console.WriteLine(answer[i].Item3);
-                Console.Write("z: ");
-                Console.WriteLine(answer[i].Item4);
-
-            }
-
-            return answer;
+            return child;
         }
 
-        // Ronda de Geneticos
-        public static char[][] round(char[][] poblation, Limit[] limits, Restriction[] restrictions)
+        // Calculate the z values associated with each chromosome and return an array with them and its sum
+        public static (double[], double) CalculateZValues(char[][] poblation, Limit[] limits)
         {
+            double total = 0;
+            var values = new double[poblation.Length];
 
-            double sum = 0;
-
-            var z = new double[poblation.Length];
-            for (int i = 0; i < z.Length; ++i)
+            for (int i = 0; i < values.Length; ++i)
             {
-
-                var values = Genetics.getMappedValues(poblation[i], limits);
-                z[i] = -Restriction.z(values[0], values[1]);
-                sum += z[i];
-
+                var mappedValues = GetMappedValues(poblation[i], limits);
+                values[i] = -Restriction.z(mappedValues[0], mappedValues[1]);
+                total += values[i];
             }
 
-            // Calcula el z porcentaje acumulado
-            var zpercentage = new double[poblation.Length];
-            var zacumulatePercentage = 0.0;
-            for (int i = 0; i < z.Length; ++i)
+            return (values, total);
+        }
+
+        // Calculate the percentages associated with each z value and return them
+        public static double[] CalculatePercentages(double[] values, double total)
+        {
+            var percentages = new double[values.Length];
+            double accumulate = 0.0;
+
+            for (int i = 0; i < values.Length; ++i)
             {
-                zpercentage[i] = z[i] / sum;
-                zacumulatePercentage += zpercentage[i];
-                zpercentage[i] = zacumulatePercentage;
+                accumulate += values[i] / total;
+                percentages[i] = accumulate;
             }
 
+            return percentages;
+        }
+
+        // Get the best chromosomes of a poblation
+        public static char[][] GetTheBest(char[][] poblation, double[] values, double[] percentages)
+        {
             var best = new PriorityQueue();
-            for (int i = 0; i < z.Length; ++i)
+            for (int i = 0; i < values.Length; ++i)
             {
-                double r = random.NextDouble();
-                for (int j = 0; j < z.Length; ++j)
+                double r = Rand.NextDouble();
+                for (int j = 0; j < values.Length; ++j)
                 {
-                    if (r < zpercentage[j])
+                    if (r < percentages[j])
                     {
-                        best.Push(poblation[j], z[j]);
+                        best.Push(poblation[j], values[j]);
                         break;
                     }
                 }
             }
 
-            Console.WriteLine("-----");
-
             return best.GetOnlyValues();
         }
+
+        // Genetic round
+        public static char[][] Round(char[][] poblation, Limit[] limits)
+        {
+            var (values, total) = CalculateZValues(poblation, limits);
+            var percentages = CalculatePercentages(values, total);
+
+            return GetTheBest(poblation, values, percentages);
+        }
+
+        // Regenerate the given poblation with best chromosomes, and mutation and crossover of best chromosomes
+        public static void RegeneratePoblation(char[][] poblation, char[][] best, Limit[] limits, Restriction[] restrictions, CancellationToken timer)
+        {
+            int i;
+            for (i = 0; i < best.Length; ++i)
+                poblation[i] = best[i];
+
+            for (int j = i; j < poblation.Length; ++j)
+            {
+                while (!timer.IsCancellationRequested)
+                {
+                    poblation[j] = Rand.Next(0, 2) == 0 ? Mutate(best[Rand.Next(0, i)]) : Cross(best[Rand.Next(0, i)], best[Rand.Next(0, i)]);
+
+                    if (CheckChromosome(poblation[j], limits, restrictions))
+                        break;
+                }
+
+                if (timer.IsCancellationRequested)
+                    throw new TimeoutException();
+            }
+
+        }
+
+        // Genetic Algorithm
+        public static (int, double, double, double) Calculate(Circle[] circles, int n, int rounds, int size, double e, bool rel, Action<(int, double, double, double)> updater,CancellationToken timer)
+        {
+            var answer = (0, 0.0, 0.0, 0.0);
+
+            Restriction.initializeZ(circles);
+
+            var restrictions = Restriction.generate(circles, e, rel);
+            var limits = Limit.generate(restrictions, n);
+            var poblation = GeneratePoblation(limits, restrictions, size, timer);
+
+            for (int i = 0; i < rounds && i < 100; ++i)
+            {
+                var best = Round(poblation, limits);
+                RegeneratePoblation(poblation, best, limits, restrictions, timer);
+
+                var values = GetMappedValues(poblation[0], limits);
+
+                answer = (i, values[0], values[1], Restriction.z(values[0], values[1]));
+                updater(answer);
+            }
+
+
+            return answer;
+        }
+
 
     }
 }

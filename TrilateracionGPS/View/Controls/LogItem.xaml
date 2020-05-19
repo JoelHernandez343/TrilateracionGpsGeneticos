@@ -1,0 +1,63 @@
+﻿<UserControl x:Class="TrilateracionGPS.View.Controls.LogItem"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:TrilateracionGPS.View.Controls"
+             mc:Ignorable="d" 
+             d:DesignHeight="100" d:DesignWidth="400">
+    <UserControl.Resources>
+        <Style x:Key="TitleStyle" TargetType="TextBlock">
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="FontSize" Value="14"/>
+        </Style>
+        <Style x:Key="LabelStyle" TargetType="TextBlock">
+            <Setter Property="Margin" Value="0 0 5 0"/>
+        </Style>
+    </UserControl.Resources>
+    
+    <StackPanel Margin="5 5">
+        <TextBlock x:Name="TitleTextBlock" Style="{StaticResource TitleStyle}" Text="Title"/>
+        <Border BorderBrush="Silver" BorderThickness="0 1 0 0" Margin="0 5 0 0"/>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="auto"/>
+                
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="*"/>
+                
+                <ColumnDefinition Width="auto"/>
+                
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="*"/>
+
+                <ColumnDefinition Width="auto"/>
+
+                <ColumnDefinition Width="auto"/>
+                <ColumnDefinition Width="*"/>
+
+                <ColumnDefinition Width="auto"/>
+            </Grid.ColumnDefinitions>
+
+            <Border BorderBrush="Silver" BorderThickness="1 0 0 0" Margin="0 0 5 0"/>
+
+            <TextBlock Text="X:" Style="{StaticResource LabelStyle}" Grid.Column="1"/>
+            <TextBlock x:Name="xField" Grid.Column="2"/>
+
+            <Border BorderBrush="Silver" BorderThickness="1 0 0 0" Margin="5 0" Grid.Column="3"/>
+            
+            <TextBlock Text="Y:" Style="{StaticResource LabelStyle}" Grid.Column="4"/>
+            <TextBlock  x:Name="yField" Grid.Column="5"/>
+
+            <Border BorderBrush="Silver" BorderThickness="1 0 0 0" Margin="5 0" Grid.Column="6"/>
+            
+            <TextBlock Text="R:" Style="{StaticResource LabelStyle}" Grid.Column="7"/>
+            <TextBlock  x:Name="rField" Grid.Column="8"/>
+
+            <Border BorderBrush="Silver" BorderThickness="1 0 0 0" Margin="5 0 0 0" Grid.Column="9"/>
+
+        </Grid>
+
+        <Border BorderBrush="Silver" BorderThickness="0 1 0 0"/>
+    </StackPanel>
+</UserControl>

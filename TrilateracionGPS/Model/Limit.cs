@@ -86,8 +86,8 @@ namespace TrilateracionGPS.Model
                     by = val;
             }
 
-            int mx = Genetics.getMj(ax, bx, n);
-            int my = Genetics.getMj(ay, by, n);
+            int mx = Genetics.GetMj(ax, bx, n);
+            int my = Genetics.GetMj(ay, by, n);
 
             Limit[] limits = {
                 new Limit() { A = ax, B = bx, M = mx },

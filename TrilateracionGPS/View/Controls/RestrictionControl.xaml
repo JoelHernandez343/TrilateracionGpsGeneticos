@@ -30,17 +30,17 @@
 
             <StackPanel>
                 <TextBlock Text="Latitud" Margin="10 10 10 5"/>
-                <TextBox Margin="10 0 10 5" x:Name="latitudeField" TextChanged="TextChanged_Event"/>
+                <TextBox Margin="10 0 10 5" x:Name="latitudeField" TextChanged="TextChanged_Event" GotKeyboardFocus="TextKeyFocus_Event"/>
             </StackPanel>
 
             <StackPanel Grid.Column="1">
                 <TextBlock Text="Longitud" Margin="10 10 10 5"/>
-                <TextBox Margin="10 0 10 5" x:Name="longitudeField" TextChanged="TextChanged_Event"/>
+                <TextBox Margin="10 0 10 5" x:Name="longitudeField" TextChanged="TextChanged_Event" GotKeyboardFocus="TextKeyFocus_Event"/>
             </StackPanel>
 
             <StackPanel Grid.Column="2">
                 <TextBlock Text="Distancia" Margin="10 10 10 5"/>
-                <TextBox Margin="10 0 10 5" x:Name="distanceField" TextChanged="TextChanged_Event"/>
+                <TextBox Margin="10 0 10 5" x:Name="distanceField" TextChanged="TextChanged_Event" GotKeyboardFocus="TextKeyFocus_Event"/>
             </StackPanel>
 
             <Button Content=" X " 

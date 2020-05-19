@@ -60,12 +60,16 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Model\Circle.cs" />
+    <Compile Include="Model\Converters\CoordinateCircleConverter.cs" />
     <Compile Include="Model\Coordinate.cs" />
     <Compile Include="Model\Genetics.cs" />
     <Compile Include="Model\Limit.cs" />
     <Compile Include="Model\Pair.cs" />
     <Compile Include="Model\PriorityQueue.cs" />
     <Compile Include="Model\Restriction.cs" />
+    <Compile Include="View\Controls\LogItem.xaml.cs">
+      <DependentUpon>LogItem.xaml</DependentUpon>
+    </Compile>
     <Compile Include="View\Controls\RestrictionControl.xaml.cs">
       <DependentUpon>RestrictionControl.xaml</DependentUpon>
     </Compile>
@@ -103,6 +107,10 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
+    <Page Include="View\Controls\LogItem.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="View\Controls\RestrictionControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
