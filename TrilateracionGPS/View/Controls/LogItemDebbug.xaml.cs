@@ -12,29 +12,26 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
-using TrilateracionGPS.Model;
 
 namespace TrilateracionGPS.View.Controls
 {
     /// <summary>
-    /// Interaction logic for LogItem.xaml
+    /// Interaction logic for LogItemDebbug.xaml
     /// </summary>
-    public partial class LogItem : UserControl
+    public partial class LogItemDebbug : UserControl
     {
-        public LogItem()
+        public LogItemDebbug()
         {
             InitializeComponent();
         }
 
-        public (int, double, double, double) Values
+        public string Message
         {
             set
             {
-                TitleTextBlock.Text = $"Ronda {value.Item1}";
-                xField.Text = value.Item2.ToString();
-                yField.Text = value.Item3.ToString();
-                zField.Text = value.Item4.ToString();
+                MainTextBlock.Text = value;
             }
         }
+
     }
 }

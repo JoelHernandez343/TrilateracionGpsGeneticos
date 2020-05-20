@@ -16,6 +16,8 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 using TrilateracionGPS.Model;
+using TrilateracionGPS.Model.Data;
+using TrilateracionGPS.Model.Genetic;
 using TrilateracionGPS.View.Controls;
 
 namespace TrilateracionGPS.View
@@ -90,6 +92,45 @@ namespace TrilateracionGPS.View
             AbsErrRb.IsChecked = true;
         }
 
+        private void SetProgressBar(int timeout)
+        {
+            TimeProgressBar.Value = 0;
+            Duration dr = new Duration(TimeSpan.FromMilliseconds(timeout));
+            DoubleAnimation da = new DoubleAnimation(100, dr);
+            TimeProgressBar.IsIndeterminate = false;
+            TimeProgressBar.BeginAnimation(ProgressBar.ValueProperty, da);
+
+        }
+
+        private void StopProgressBar()
+        {
+            TimeProgressBar.BeginAnimation(ProgressBar.ValueProperty, null);
+            TimeProgressBar.Value = 100;
+        }
+
+        private void ToggleCalculateButtonFunction()
+        {
+            if ((string)CalculateButton.Content == "CALCULAR")
+            {
+                CalculateButton.Click -= CalculateButton_Click;
+                CalculateButton.Click += CancelButton_Click;
+                CalculateButton.Content = "CANCELAR";
+                CalculateButton.Foreground = Brushes.Red;
+            }
+            else
+            {
+                CalculateButton.Click -= CancelButton_Click;
+                CalculateButton.Click += CalculateButton_Click;
+                CalculateButton.Content = "CALCULAR";
+                CalculateButton.ClearValue(ForegroundProperty);
+            }
+        }
+
+        private void CancelButton_Click(object sender, RoutedEventArgs e)
+        {
+            timer?.Cancel();
+        }
+        
         private async void CalculateButton_Click(object sender, RoutedEventArgs e)
         {
             if (!ValidateAll())
@@ -102,7 +143,7 @@ namespace TrilateracionGPS.View
             LatitudeTextBlock.Text = "--.--";
             LongitudeTextBlock.Text = "--.--";
 
-            toggleCalculateButtonFunction();
+            ToggleCalculateButtonFunction();
 
             var coordinates = new List<Coordinate>();
             var circles = new List<Circle>();
@@ -130,11 +171,9 @@ namespace TrilateracionGPS.View
 
             SetProgressBar(timeout);
 
-            
-
             try
             {
-                var res = await Task.Run(() => Genetics.Calculate(circles.ToArray(), n, rounds, size, error, !abs, UpdateLogCrossThread, timer.Token), timer.Token);
+                var res = await Task.Run(() => Genetics.Calculate(circles.ToArray(), n, rounds, size, error, !abs, UpdateLogCrossThread, UpdateLogCrossThread, timer.Token), timer.Token);
 
                 ResultsStackPanel.Visibility = Visibility.Visible;
                 ErrorMessageGrid.Visibility = Visibility.Collapsed;
@@ -154,62 +193,34 @@ namespace TrilateracionGPS.View
                     ErrorMessageTextBlock.Text = $"Ocurrió una excepción de tipo {ex.GetType().Name}\nMensaje: {ex.Message}";
             }
 
-            StopProgressBar(timeout);
+            StopProgressBar();
             sw.Stop();
             ElapsedTimeTextBlock.Text = sw.Elapsed.ToString();
 
-            toggleCalculateButtonFunction();
+            ToggleCalculateButtonFunction();
 
             timer = null;
         }
-
-        private void SetProgressBar(int timeout)
-        {
-            TimeProgressBar.Value = 0;
-            Duration dr = new Duration(TimeSpan.FromMilliseconds(timeout));
-            DoubleAnimation da = new DoubleAnimation(100, dr);
-            TimeProgressBar.IsIndeterminate = false;
-            TimeProgressBar.BeginAnimation(ProgressBar.ValueProperty, da);
-
-        }
-
-        private void StopProgressBar(int timeout)
-        {
-            TimeProgressBar.BeginAnimation(ProgressBar.ValueProperty, null);
-            TimeProgressBar.Value = 100;
-        }
-
-        private void toggleCalculateButtonFunction()
-        {
-            if ((string)CalculateButton.Content == "CALCULAR")
-            {
-                CalculateButton.Click -= CalculateButton_Click;
-                CalculateButton.Click += CancelButton_Click;
-                CalculateButton.Content = "CANCELAR";
-                CalculateButton.Foreground = Brushes.Red;
-            }
-            else
-            {
-                CalculateButton.Click -= CancelButton_Click;
-                CalculateButton.Click += CalculateButton_Click;
-                CalculateButton.Content = "CALCULAR";
-                CalculateButton.ClearValue(ForegroundProperty);
-            }
-        }
-
-        private void CancelButton_Click(object sender, RoutedEventArgs e)
-        {
-            timer?.Cancel();
-        }
-
+        
+        // Cross thread operations
         private delegate void UpdateLogCallback((int, double, double, double) m);
         public void UpdateLogCrossThread((int, double, double, double) m)
         {
-            Dispatcher.BeginInvoke(new UpdateLogCallback(addLogToStackPanel), System.Windows.Threading.DispatcherPriority.Render, new object[] { m });
+            Dispatcher.BeginInvoke(new UpdateLogCallback(AddLogToStackPanel), System.Windows.Threading.DispatcherPriority.Render, new object[] { m });
         }
-        private void addLogToStackPanel((int, double, double, double) m)
+        private void AddLogToStackPanel((int, double, double, double) m)
         {
             LogStackPanel.Children.Add(new LogItem { Values = m });
+        }
+
+        private delegate void UpdateLogItemDebbugCallback(string m);
+        public void UpdateLogCrossThread(string m)
+        {
+            Dispatcher.BeginInvoke(new UpdateLogItemDebbugCallback(AddLogToStackPanel), System.Windows.Threading.DispatcherPriority.Render, new object[] { m });
+        }
+        private void AddLogToStackPanel(string m)
+        {
+            LogStackPanel.Children.Add(new LogItemDebbug { Message = m });
         }
 
         /// UI Operations
@@ -218,7 +229,7 @@ namespace TrilateracionGPS.View
         public bool ValidateAll()
         {
             bool isValid = true;
-            var badRestrictions = checkAllRestrictions();
+            var badRestrictions = CheckAllRestrictions();
             if (badRestrictions.Count != 0)
             {
                 isValid = false;
@@ -263,7 +274,7 @@ namespace TrilateracionGPS.View
             }
 
         }
-        List<int> checkAllRestrictions()
+        List<int> CheckAllRestrictions()
         {
             var indexes = new List<int>();
             int i = 0;

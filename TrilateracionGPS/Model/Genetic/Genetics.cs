@@ -4,14 +4,16 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using TrilateracionGPS.Model.Data;
+using TrilateracionGPS.Model.Helpers;
 using TrilateracionGPS.View;
 
-namespace TrilateracionGPS.Model
+namespace TrilateracionGPS.Model.Genetic
 {
     class Genetics
     {
         // For random numbers
-        static readonly Random Rand = new Random();
+        static Random Rand;
 
         // Get the necessary bits for a certain variable
         public static int GetMj(double a, double b, int n)
@@ -86,19 +88,19 @@ namespace TrilateracionGPS.Model
         }
 
         // Check if a chromosome is valid
-        public static bool CheckChromosome(char[] chromosome, Limit[] limits, Restriction[] restrictions)
+        public static bool CheckChromosome(char[] chromosome, Limit[] limits, Func<double, double, bool>[] restrictions)
         {
             var mappedValues = GetMappedValues(chromosome, limits);
 
             for (int i = 0; i < restrictions.Length; ++i)
-                if (!restrictions[i].condition(mappedValues[0], mappedValues[1]))
+                if (!restrictions[i](mappedValues[0], mappedValues[1]))
                     return false;
 
             return true;
         }
 
         // Generate a valid chromosome
-        public static char[] GenerateChromosome(Limit[] limits, Restriction[] restrictions, CancellationToken timer)
+        public static char[] GenerateChromosome(Limit[] limits, Func<double, double, bool>[] restrictions, CancellationToken timer)
         {
             char[] chromosome = null;
             bool stay = true;
@@ -119,7 +121,7 @@ namespace TrilateracionGPS.Model
         }
 
         // Generate a poblation of n valid chromosomes
-        public static char[][] GeneratePoblation(Limit[] limits, Restriction[] restrictions, int m, CancellationToken timer)
+        public static char[][] GeneratePoblation(Limit[] limits, Func<double, double, bool>[] restrictions, int m, CancellationToken timer)
         {
             char[][] poblation = new char[m][];
 
@@ -165,7 +167,7 @@ namespace TrilateracionGPS.Model
             for (int i = 0; i < values.Length; ++i)
             {
                 var mappedValues = GetMappedValues(poblation[i], limits);
-                values[i] = -Restriction.z(mappedValues[0], mappedValues[1]);
+                values[i] = -Restriction.Z(mappedValues[0], mappedValues[1]);
                 total += values[i];
             }
 
@@ -217,7 +219,7 @@ namespace TrilateracionGPS.Model
         }
 
         // Regenerate the given poblation with best chromosomes, and mutation and crossover of best chromosomes
-        public static void RegeneratePoblation(char[][] poblation, char[][] best, Limit[] limits, Restriction[] restrictions, CancellationToken timer)
+        public static void RegeneratePoblation(char[][] poblation, char[][] best, Limit[] limits, Func<double, double, bool>[] restrictions, CancellationToken timer)
         {
             int i;
             for (i = 0; i < best.Length; ++i)
@@ -240,15 +242,23 @@ namespace TrilateracionGPS.Model
         }
 
         // Genetic Algorithm
-        public static (int, double, double, double) Calculate(Circle[] circles, int n, int rounds, int size, double e, bool rel, Action<(int, double, double, double)> updater,CancellationToken timer)
+        public static (int, double, double, double) Calculate(Circle[] circles, int n, int rounds, int size, double e, bool rel, Action<(int, double, double, double)> loggerTuple, Action<string> logger,CancellationToken timer)
         {
+            Rand = new Random();
+
             var answer = (0, 0.0, 0.0, 0.0);
 
-            Restriction.initializeZ(circles);
+            Restriction.InitializeZ(circles);
 
-            var restrictions = Restriction.generate(circles, e, rel);
-            var limits = Limit.generate(restrictions, n);
+            double error = Restriction.CalculateError(e, circles.Length, rel);
+            logger($"Usando error: {error}");
+            var restrictions = Restriction.Generate(circles, error);
+            var limits = Limit.Generate(circles, n, error, logger);
+
+
+            logger($"Generando población de {size} individuos...");
             var poblation = GeneratePoblation(limits, restrictions, size, timer);
+            logger($"Población generada de {size} individuos...");
 
             for (int i = 0; i < rounds && i < 100; ++i)
             {
@@ -257,10 +267,9 @@ namespace TrilateracionGPS.Model
 
                 var values = GetMappedValues(poblation[0], limits);
 
-                answer = (i, values[0], values[1], Restriction.z(values[0], values[1]));
-                updater(answer);
+                answer = (i, values[0], values[1], Restriction.Z(values[0], values[1]));
+                loggerTuple(answer);
             }
-
 
             return answer;
         }

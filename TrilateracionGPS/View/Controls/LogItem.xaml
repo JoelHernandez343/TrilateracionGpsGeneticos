@@ -51,8 +51,8 @@
 
             <Border BorderBrush="Silver" BorderThickness="1 0 0 0" Margin="5 0" Grid.Column="6"/>
             
-            <TextBlock Text="R:" Style="{StaticResource LabelStyle}" Grid.Column="7"/>
-            <TextBlock  x:Name="rField" Grid.Column="8"/>
+            <TextBlock Text="Z:" Style="{StaticResource LabelStyle}" Grid.Column="7"/>
+            <TextBlock  x:Name="zField" Grid.Column="8"/>
 
             <Border BorderBrush="Silver" BorderThickness="1 0 0 0" Margin="5 0 0 0" Grid.Column="9"/>
 

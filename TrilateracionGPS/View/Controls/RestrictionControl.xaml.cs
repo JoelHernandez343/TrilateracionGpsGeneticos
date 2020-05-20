@@ -15,6 +15,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using TrilateracionGPS.Model;
+using TrilateracionGPS.Model.Data;
 
 namespace TrilateracionGPS.View.Controls
 {

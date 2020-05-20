@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TrilateracionGPS.Model
+namespace TrilateracionGPS.Model.Helpers
 {
     public struct Pair
     {

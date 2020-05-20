@@ -59,16 +59,23 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Model\Circle.cs" />
+    <Compile Include="Model\Data\Area.cs" />
+    <Compile Include="Model\Data\Circle.cs" />
     <Compile Include="Model\Converters\CoordinateCircleConverter.cs" />
-    <Compile Include="Model\Coordinate.cs" />
-    <Compile Include="Model\Genetics.cs" />
-    <Compile Include="Model\Limit.cs" />
-    <Compile Include="Model\Pair.cs" />
-    <Compile Include="Model\PriorityQueue.cs" />
-    <Compile Include="Model\Restriction.cs" />
+    <Compile Include="Model\Data\Coordinate.cs" />
+    <Compile Include="Model\Data\Line.cs" />
+    <Compile Include="Model\Data\Point.cs" />
+    <Compile Include="Model\Genetic\Genetics.cs" />
+    <Compile Include="Model\Genetic\Limit.cs" />
+    <Compile Include="Model\Helpers\Help.cs" />
+    <Compile Include="Model\Helpers\Pair.cs" />
+    <Compile Include="Model\Helpers\PriorityQueue.cs" />
+    <Compile Include="Model\Genetic\Restriction.cs" />
     <Compile Include="View\Controls\LogItem.xaml.cs">
       <DependentUpon>LogItem.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="View\Controls\LogItemDebbug.xaml.cs">
+      <DependentUpon>LogItemDebbug.xaml</DependentUpon>
     </Compile>
     <Compile Include="View\Controls\RestrictionControl.xaml.cs">
       <DependentUpon>RestrictionControl.xaml</DependentUpon>
@@ -108,6 +115,10 @@
   </ItemGroup>
   <ItemGroup>
     <Page Include="View\Controls\LogItem.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="View\Controls\LogItemDebbug.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
