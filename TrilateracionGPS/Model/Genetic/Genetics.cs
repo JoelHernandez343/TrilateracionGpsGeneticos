@@ -134,7 +134,10 @@ namespace TrilateracionGPS.Model.Genetic
         // Mutate a random chromosome's gen and return a new one
         public static char[] Mutate(char[] chromosome)
         {
-            var r = chromosome.Clone() as char[];
+            var r = new char[chromosome.Length];
+
+            for (int i = 0; i < r.Length; ++i)
+                r[i] = chromosome[i];
 
             int index = Rand.Next(0, r.Length);
             r[index] = r[index] == '1' ? '0' : '1';
@@ -174,23 +177,25 @@ namespace TrilateracionGPS.Model.Genetic
             return (values, total);
         }
 
-        // Calculate the percentages associated with each z value and return them
-        public static double[] CalculatePercentages(double[] values, double total)
+        // Calculate the percentages associated and the accumulates with each z value and return them
+        public static (double[], double[]) CalculatePercentages(double[] values, double total)
         {
             var percentages = new double[values.Length];
+            var accumulates = new double[values.Length];
             double accumulate = 0.0;
 
             for (int i = 0; i < values.Length; ++i)
             {
-                accumulate += values[i] / total;
-                percentages[i] = accumulate;
+                percentages[i] = values[i] / total;
+                accumulate += percentages[i];
+                accumulates[i] = accumulate;
             }
 
-            return percentages;
+            return (percentages, accumulates);
         }
 
         // Get the best chromosomes of a poblation
-        public static char[][] GetTheBest(char[][] poblation, double[] values, double[] percentages)
+        public static char[][] GetTheBest(char[][] poblation, double[] values, double[] accumulates)
         {
             var best = new PriorityQueue();
             for (int i = 0; i < values.Length; ++i)
@@ -198,7 +203,7 @@ namespace TrilateracionGPS.Model.Genetic
                 double r = Rand.NextDouble();
                 for (int j = 0; j < values.Length; ++j)
                 {
-                    if (r < percentages[j])
+                    if (r < accumulates[j])
                     {
                         best.Push(poblation[j], values[j]);
                         break;
@@ -213,9 +218,9 @@ namespace TrilateracionGPS.Model.Genetic
         public static char[][] Round(char[][] poblation, Limit[] limits)
         {
             var (values, total) = CalculateZValues(poblation, limits);
-            var percentages = CalculatePercentages(values, total);
+            var (percentages, accumulates) = CalculatePercentages(values, total);
 
-            return GetTheBest(poblation, values, percentages);
+            return GetTheBest(poblation, percentages, accumulates);
         }
 
         // Regenerate the given poblation with best chromosomes, and mutation and crossover of best chromosomes

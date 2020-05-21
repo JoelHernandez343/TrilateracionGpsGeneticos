@@ -45,10 +45,12 @@ namespace TrilateracionGPS.Model.Helpers
             if (i >= 0)
                 queue[i] = new Pair { Item = queue[i].Item, Repetitions = queue[i].Repetitions + 1, Weight = queue[i].Weight };
             else
+            {
                 queue.Add(new Pair { Item = item, Repetitions = 1, Weight = weight });
+                i = queue.Count - 1;
+            }
 
             Shift(i);
-
         }
 
         // Search for the item inside the queue and returns its index

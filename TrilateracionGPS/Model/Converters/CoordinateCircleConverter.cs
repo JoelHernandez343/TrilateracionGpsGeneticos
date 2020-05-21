@@ -22,7 +22,7 @@ namespace TrilateracionGPS.Model.Converters
 
         public static Coordinate CircleToCoordinate(Circle circle) => new Coordinate
         {
-            Latitude = (180 / Math.PI) * Math.Acos(Help.MapArcoFunc(circle.Y * 360 / circunference)),
+            Latitude = (180 / Math.PI) * Math.Acos(circle.Y * 360 / circunference),
             Longitude = circle.X / circle.Y,
             Distance = circle.R
         };
