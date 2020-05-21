@@ -16,6 +16,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Windows.Threading;
 using TrilateracionGPS.Model;
+using TrilateracionGPS.Model.Converters;
 using TrilateracionGPS.Model.Data;
 using TrilateracionGPS.Model.Genetic;
 using TrilateracionGPS.View.Controls;
@@ -145,13 +146,11 @@ namespace TrilateracionGPS.View
 
             ToggleCalculateButtonFunction();
 
-            var coordinates = new List<Coordinate>();
             var circles = new List<Circle>();
 
             foreach (RestrictionControl r in RestrictionsStackPanel.Children)
             {
-                coordinates.Add(r.Coordinate);
-                circles.Add(new Circle { X = r.Coordinate.Latitude, Y = r.Coordinate.Longitude, R = r.Coordinate.Distance });
+                circles.Add(CoordinateCircleConverter.CoordinateToCircle(r.Coordinate));
             }
 
             int n = int.Parse(PrecisionTextBox.Text);
@@ -178,8 +177,14 @@ namespace TrilateracionGPS.View
                 ResultsStackPanel.Visibility = Visibility.Visible;
                 ErrorMessageGrid.Visibility = Visibility.Collapsed;
 
-                LatitudeTextBlock.Text = res.Item2.ToString();
-                LongitudeTextBlock.Text = res.Item3.ToString();
+                var result = CoordinateCircleConverter.CircleToCoordinate(new Circle
+                {
+                    X = res.Item2,
+                    Y = res.Item3
+                });
+
+                LatitudeTextBlock.Text = result.Latitude.ToString();
+                LongitudeTextBlock.Text = result.Longitude.ToString();
 
             }
             catch (Exception ex)

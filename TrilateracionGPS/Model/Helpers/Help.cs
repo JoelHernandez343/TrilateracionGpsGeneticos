@@ -23,5 +23,21 @@ namespace TrilateracionGPS.Model.Helpers
 
             return (x1, x2);
         }
+
+        // Module operation
+        public static double Mod(double a, double n) => a < 0 ? (n - ((-a)) % n) % n : a % n;
+
+        // Map the given value to [-1, 1)
+        public static double MapArcoFunc(double value)
+        {
+            var integer = (int)value;
+            if (integer - value == 0)
+                return Mod(integer, 2) == 0 ? 0.0 : -1.0;
+
+            int floor = Convert.ToInt32(Math.Floor(value));
+            int ceil = Convert.ToInt32(Math.Ceiling(value));
+
+            return Mod(floor, 2) == 0 ? value - floor : value - ceil;
+        }
     }
 }
