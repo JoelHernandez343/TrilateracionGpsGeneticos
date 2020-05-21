@@ -12,10 +12,17 @@
             <Setter Property="TextWrapping" Value="Wrap"/>
             <Setter Property="TextAlignment" Value="Justify"/>
         </Style>
+
+        <Style x:Key="TextBoxCamouflaged" TargetType="TextBox">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="IsReadOnly" Value="true"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+        </Style>
     </UserControl.Resources>
     
     <StackPanel>
-        <TextBlock x:Name="MainTextBlock" Style="{StaticResource TitleStyle}" Text="This is a very long text that hopefully will warp when exceeds 250 px of length."/>
+        <TextBox x:Name="MainTextBlock" Text="This is a very long text that hopefully will warp when exceeds 250 px of length." Style="{StaticResource TextBoxCamouflaged}"/>
         <Border BorderBrush="Silver" BorderThickness="0 1 0 0" Margin="0 5 0 0"/>
     </StackPanel>
 </UserControl>

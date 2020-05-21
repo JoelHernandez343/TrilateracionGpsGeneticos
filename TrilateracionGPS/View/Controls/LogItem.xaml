@@ -14,6 +14,14 @@
         <Style x:Key="LabelStyle" TargetType="TextBlock">
             <Setter Property="Margin" Value="0 0 5 0"/>
         </Style>
+
+        <Style x:Key="TextBoxCamouflaged" TargetType="TextBox">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="IsReadOnly" Value="true"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+        </Style>
+
     </UserControl.Resources>
     
     <StackPanel Margin="5 5">
@@ -42,17 +50,17 @@
             <Border BorderBrush="Silver" BorderThickness="1 0 0 0" Margin="0 0 5 0"/>
 
             <TextBlock Text="X:" Style="{StaticResource LabelStyle}" Grid.Column="1"/>
-            <TextBlock x:Name="xField" Grid.Column="2"/>
+            <TextBox x:Name="xField" Grid.Column="2" Style="{StaticResource TextBoxCamouflaged}"/>
 
             <Border BorderBrush="Silver" BorderThickness="1 0 0 0" Margin="5 0" Grid.Column="3"/>
             
             <TextBlock Text="Y:" Style="{StaticResource LabelStyle}" Grid.Column="4"/>
-            <TextBlock  x:Name="yField" Grid.Column="5"/>
+            <TextBox  x:Name="yField" Grid.Column="5" Style="{StaticResource TextBoxCamouflaged}"/>
 
             <Border BorderBrush="Silver" BorderThickness="1 0 0 0" Margin="5 0" Grid.Column="6"/>
             
             <TextBlock Text="Z:" Style="{StaticResource LabelStyle}" Grid.Column="7"/>
-            <TextBlock  x:Name="zField" Grid.Column="8"/>
+            <TextBox x:Name="zField" Grid.Column="8" Style="{StaticResource TextBoxCamouflaged}"/>
 
             <Border BorderBrush="Silver" BorderThickness="1 0 0 0" Margin="5 0 0 0" Grid.Column="9"/>
 

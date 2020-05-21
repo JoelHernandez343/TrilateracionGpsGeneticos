@@ -146,13 +146,6 @@ namespace TrilateracionGPS.View
 
             ToggleCalculateButtonFunction();
 
-            var circles = new List<Circle>();
-
-            foreach (RestrictionControl r in RestrictionsStackPanel.Children)
-            {
-                circles.Add(CoordinateCircleConverter.CoordinateToCircle(r.Coordinate));
-            }
-
             int n = int.Parse(PrecisionTextBox.Text);
             int rounds = int.Parse(PoblationsTextBox.Text);
             int size = int.Parse(PoblationSizeTextBox.Text);
@@ -160,6 +153,16 @@ namespace TrilateracionGPS.View
             bool abs = (bool)AbsErrRb.IsChecked;
 
             LogStackPanel.Children.Clear();
+
+            var circles = new List<Circle>();
+            AddLogToStackPanel("Usando los siguientes circulos:");
+            foreach (RestrictionControl r in RestrictionsStackPanel.Children)
+            {
+                var circle = CoordinateCircleConverter.CoordinateToCircle(r.Coordinate);
+
+                circles.Add(circle);
+                AddLogToStackPanel($"x = {circle.X}, y = {circle.Y}, r = {circle.R}");
+            }
 
             int timeout = int.Parse(TimerTextBox.Text);
             timer = new CancellationTokenSource();

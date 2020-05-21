@@ -31,8 +31,8 @@ namespace TrilateracionGPS.Model.Genetic
             (double x, double y) => Help.Square(x - circle.X) + Help.Square(y - circle.Y) - Help.Square(circle.R) <= error;
 
         // Error calculation (Modified to meters)
-        public static double AbsoluteError(double e, int numOfRestrictions) => Math.Sqrt(Z(0, 0)) * e / (numOfRestrictions);
-        public static double RelativeError(double e, int numOfRestrictions) => Z(0, 0) * e / (numOfRestrictions);
+        public static double AbsoluteError(double e, int numOfRestrictions) => Math.Sqrt(Z(0, 0)) * e / (numOfRestrictions * 10E+6);
+        public static double RelativeError(double e, int numOfRestrictions) => Z(0, 0) * e / (numOfRestrictions * 10E+6);
         public static double CalculateError(double e, int length,bool rel) => rel ? RelativeError(e, length) : AbsoluteError(e, length);
 
         // Generate all restrictions
