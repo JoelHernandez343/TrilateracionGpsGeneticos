@@ -10,11 +10,11 @@ namespace TrilateracionGPS.Model.Converters
 {
     class CoordinateCircleConverter
     {
-        static readonly double circunference = 40030.174;
+        static readonly double circumference = 40030.174;
 
         public static Circle CoordinateToCircle(Coordinate coordinate)
         {
-            double y = circunference / 360 * Math.Cos(coordinate.Latitude * Math.PI / 180);
+            double y = circumference / 360 * Math.Cos(coordinate.Latitude * Math.PI / 180);
             double x = y * coordinate.Longitude;
 
             return new Circle { X = x, Y = y, R = coordinate.Distance };
@@ -22,7 +22,7 @@ namespace TrilateracionGPS.Model.Converters
 
         public static Coordinate CircleToCoordinate(Circle circle) => new Coordinate
         {
-            Latitude = (180 / Math.PI) * Math.Acos(circle.Y * 360 / circunference),
+            Latitude = (180 / Math.PI) * Math.Acos(circle.Y * 360 / circumference),
             Longitude = circle.X / circle.Y,
             Distance = circle.R
         };

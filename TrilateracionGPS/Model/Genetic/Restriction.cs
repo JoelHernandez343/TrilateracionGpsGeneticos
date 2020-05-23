@@ -10,7 +10,7 @@ namespace TrilateracionGPS.Model.Genetic
 {
     class Restriction
     {
-        // Represents the objetive function
+        // Represents the objective function
         public static Func<double, double, double> Z = null;
         
         // Create a new objetive function
@@ -46,6 +46,5 @@ namespace TrilateracionGPS.Model.Genetic
 
             return restrictions;
         }
-
     }
 }

@@ -63,8 +63,6 @@ namespace TrilateracionGPS.Model.Genetic
                 logger(e.Message);   
                 throw e;
             }
-
-            
         }
     }
 }

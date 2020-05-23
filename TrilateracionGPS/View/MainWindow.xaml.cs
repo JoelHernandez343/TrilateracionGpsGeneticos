@@ -61,9 +61,9 @@ namespace TrilateracionGPS.View
                 ToggleConfigErrorStyle(t, CheckInteger, 100, int.MaxValue);
             else if (t.Name == "PrecisionTextBox")
                 ToggleConfigErrorStyle(t, CheckInteger, 0, int.MaxValue);
-            else if (t.Name == "PoblationSizeTextBox")
+            else if (t.Name == "PopulationSizeTextBox")
                 ToggleConfigErrorStyle(t, CheckInteger, 1, int.MaxValue);
-            else if (t.Name == "PoblationsTextBox")
+            else if (t.Name == "PopulationsTextBox")
                 ToggleConfigErrorStyle(t, CheckInteger, 1, 100);
             else
                 ToggleConfigErrorStyle(t, CheckError);
@@ -87,8 +87,8 @@ namespace TrilateracionGPS.View
         {
             ClearConfiguration(TimerTextBox);
             ClearConfiguration(PrecisionTextBox);
-            ClearConfiguration(PoblationSizeTextBox);
-            ClearConfiguration(PoblationsTextBox);
+            ClearConfiguration(PopulationSizeTextBox);
+            ClearConfiguration(PopulationsTextBox);
             ClearConfiguration(ErrorTextBox);
             AbsErrRb.IsChecked = true;
         }
@@ -147,8 +147,8 @@ namespace TrilateracionGPS.View
             ToggleCalculateButtonFunction();
 
             int n = int.Parse(PrecisionTextBox.Text);
-            int rounds = int.Parse(PoblationsTextBox.Text);
-            int size = int.Parse(PoblationSizeTextBox.Text);
+            int rounds = int.Parse(PopulationsTextBox.Text);
+            int size = int.Parse(PopulationSizeTextBox.Text);
             double error = double.Parse(ErrorTextBox.Text);
             bool abs = (bool)AbsErrRb.IsChecked;
 
@@ -382,8 +382,8 @@ namespace TrilateracionGPS.View
 
             flag &= ToggleConfigErrorStyle(TimerTextBox, CheckInteger, 100, int.MaxValue);
             flag &= ToggleConfigErrorStyle(PrecisionTextBox, CheckInteger, 0, int.MaxValue);
-            flag &= ToggleConfigErrorStyle(PoblationSizeTextBox, CheckInteger, 1, int.MaxValue);
-            flag &= ToggleConfigErrorStyle(PoblationsTextBox, CheckInteger, 1, 100);
+            flag &= ToggleConfigErrorStyle(PopulationSizeTextBox, CheckInteger, 1, int.MaxValue);
+            flag &= ToggleConfigErrorStyle(PopulationsTextBox, CheckInteger, 1, 100);
             flag &= ToggleConfigErrorStyle(ErrorTextBox, CheckError);
 
             return flag;

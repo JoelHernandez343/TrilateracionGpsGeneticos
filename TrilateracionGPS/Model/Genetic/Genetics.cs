@@ -120,15 +120,15 @@ namespace TrilateracionGPS.Model.Genetic
             return chromosome;
         }
 
-        // Generate a poblation of n valid chromosomes
-        public static char[][] GeneratePoblation(Limit[] limits, Func<double, double, bool>[] restrictions, int m, CancellationToken timer)
+        // Generate a population of n valid chromosomes
+        public static char[][] GeneratePopulation(Limit[] limits, Func<double, double, bool>[] restrictions, int m, CancellationToken timer)
         {
-            char[][] poblation = new char[m][];
+            char[][] population = new char[m][];
 
             for (int i = 0; i < m; ++i)
-                poblation[i] = GenerateChromosome(limits, restrictions, timer);
+                population[i] = GenerateChromosome(limits, restrictions, timer);
 
-            return poblation;
+            return population;
         }
 
         // Mutate a random chromosome's gen and return a new one
@@ -162,14 +162,14 @@ namespace TrilateracionGPS.Model.Genetic
         }
 
         // Calculate the z values associated with each chromosome and return an array with them and its sum
-        public static (double[], double) CalculateZValues(char[][] poblation, Limit[] limits)
+        public static (double[], double) CalculateZValues(char[][] population, Limit[] limits)
         {
             double total = 0;
-            var values = new double[poblation.Length];
+            var values = new double[population.Length];
 
             for (int i = 0; i < values.Length; ++i)
             {
-                var mappedValues = GetMappedValues(poblation[i], limits);
+                var mappedValues = GetMappedValues(population[i], limits);
                 values[i] = -Restriction.Z(mappedValues[0], mappedValues[1]);
                 total += values[i];
             }
@@ -194,8 +194,8 @@ namespace TrilateracionGPS.Model.Genetic
             return (percentages, accumulates);
         }
 
-        // Get the best chromosomes of a poblation
-        public static char[][] GetTheBest(char[][] poblation, double[] values, double[] accumulates)
+        // Get the best chromosomes of a population
+        public static char[][] GetTheBest(char[][] population, double[] values, double[] accumulates)
         {
             var best = new PriorityQueue();
             for (int i = 0; i < values.Length; ++i)
@@ -205,7 +205,7 @@ namespace TrilateracionGPS.Model.Genetic
                 {
                     if (r < accumulates[j])
                     {
-                        best.Push(poblation[j], values[j]);
+                        best.Push(population[j], values[j]);
                         break;
                     }
                 }
@@ -215,28 +215,28 @@ namespace TrilateracionGPS.Model.Genetic
         }
 
         // Genetic round
-        public static char[][] Round(char[][] poblation, Limit[] limits)
+        public static char[][] Round(char[][] population, Limit[] limits)
         {
-            var (values, total) = CalculateZValues(poblation, limits);
+            var (values, total) = CalculateZValues(population, limits);
             var (percentages, accumulates) = CalculatePercentages(values, total);
 
-            return GetTheBest(poblation, percentages, accumulates);
+            return GetTheBest(population, percentages, accumulates);
         }
 
-        // Regenerate the given poblation with best chromosomes, and mutation and crossover of best chromosomes
-        public static void RegeneratePoblation(char[][] poblation, char[][] best, Limit[] limits, Func<double, double, bool>[] restrictions, CancellationToken timer)
+        // Regenerate the given population with best chromosomes, and mutation and crossover of best chromosomes
+        public static void RegeneratePopulation(char[][] population, char[][] best, Limit[] limits, Func<double, double, bool>[] restrictions, CancellationToken timer)
         {
             int i;
             for (i = 0; i < best.Length; ++i)
-                poblation[i] = best[i];
+                population[i] = best[i];
 
-            for (int j = i; j < poblation.Length; ++j)
+            for (int j = i; j < population.Length; ++j)
             {
                 while (!timer.IsCancellationRequested)
                 {
-                    poblation[j] = Rand.Next(0, 2) == 0 ? Mutate(best[Rand.Next(0, i)]) : Cross(best[Rand.Next(0, i)], best[Rand.Next(0, i)]);
+                    population[j] = Rand.Next(0, 2) == 0 ? Mutate(best[Rand.Next(0, i)]) : Cross(best[Rand.Next(0, i)], best[Rand.Next(0, i)]);
 
-                    if (CheckChromosome(poblation[j], limits, restrictions))
+                    if (CheckChromosome(population[j], limits, restrictions))
                         break;
                 }
 
@@ -262,15 +262,15 @@ namespace TrilateracionGPS.Model.Genetic
 
 
             logger($"Generando población de {size} individuos...");
-            var poblation = GeneratePoblation(limits, restrictions, size, timer);
+            var population = GeneratePopulation(limits, restrictions, size, timer);
             logger($"Población generada de {size} individuos...");
 
             for (int i = 0; i < rounds && i < 100; ++i)
             {
-                var best = Round(poblation, limits);
-                RegeneratePoblation(poblation, best, limits, restrictions, timer);
+                var best = Round(population, limits);
+                RegeneratePopulation(population, best, limits, restrictions, timer);
 
-                var values = GetMappedValues(poblation[0], limits);
+                var values = GetMappedValues(population[0], limits);
 
                 answer = (i, values[0], values[1], Restriction.Z(values[0], values[1]));
                 loggerTuple(answer);
@@ -278,7 +278,5 @@ namespace TrilateracionGPS.Model.Genetic
 
             return answer;
         }
-
-
     }
 }

@@ -200,7 +200,5 @@ namespace TrilateracionGPS.Model.Data
 
             return Area.GetIntersectionOfAllAreas(areas);
         }
-
     }
-    
 }

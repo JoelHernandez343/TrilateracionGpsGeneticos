@@ -157,13 +157,13 @@
                                          LostFocus="TextChanged_Event"
                                          GotKeyboardFocus="TextKeyFocus_Event"/>
                                 <TextBlock Text="Tamaño de la población: "/>
-                                <TextBox x:Name="PoblationSizeTextBox" 
+                                <TextBox x:Name="PopulationSizeTextBox" 
                                          Margin="0 5" 
                                          TextChanged="TextChanged_Event" 
                                          LostFocus="TextChanged_Event"
                                          GotKeyboardFocus="TextKeyFocus_Event"/>
                                 <TextBlock Text="Número de poblaciones: "/>
-                                <TextBox x:Name="PoblationsTextBox" 
+                                <TextBox x:Name="PopulationsTextBox" 
                                          Margin="0 5" 
                                          TextChanged="TextChanged_Event" 
                                          LostFocus="TextChanged_Event"

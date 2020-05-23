@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 
 namespace TrilateracionGPS.Model.Helpers
 {
-    
     public class PriorityQueue
     {
         public List<Pair> queue;
@@ -38,10 +37,10 @@ namespace TrilateracionGPS.Model.Helpers
                 return;
             }
 
-            // Search the element in the queque
+            // Search the element in the queue
             int i = SearchFor(item);
 
-            // If exits, update the repetitions or add a new element if not
+            // If exists, update the repetitions or add a new element if not
             if (i >= 0)
                 queue[i] = new Pair { Item = queue[i].Item, Repetitions = queue[i].Repetitions + 1, Weight = queue[i].Weight };
             else
@@ -87,6 +86,5 @@ namespace TrilateracionGPS.Model.Helpers
             queue[i] = queue[j];
             queue[j] = aux;
         }
-
     }
 }
