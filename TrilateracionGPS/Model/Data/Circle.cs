@@ -155,7 +155,15 @@ namespace TrilateracionGPS.Model.Data
 
                 points.AddRange(c1.GetCardinalPoints().Where(point => c2.Contains(point)).ToList());
                 points.AddRange(c2.GetCardinalPoints().Where(point => c1.Contains(point)).ToList());
-                points.AddRange(IntersectionCircleCircle(c1, c2));
+                
+                try
+                {
+                    points.AddRange(IntersectionCircleCircle(c1, c2));
+                } catch (Exception e)
+                {
+                    if (points.Count < 4)
+                        throw e;
+                }
 
                 return Area.CalculateArea(points);
             }
