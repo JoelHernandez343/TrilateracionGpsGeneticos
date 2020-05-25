@@ -389,5 +389,9 @@ namespace TrilateracionGPS.View
             return flag;
         }
 
+        private void About_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Integrantes:\nJoel Harim Hernandez Javier (3CM8)\nEli Sanchez Martinez (3CM8)\nBrenda Mariana Hernández Morales (3CM7)\nDiana Laura Jiménez López (3CM7)");
+        }
     }
 }
